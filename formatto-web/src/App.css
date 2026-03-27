@@ -2,15 +2,33 @@
 .nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 60px;
-  background: rgba(247,243,237,0.95);
-  backdrop-filter: blur(14px);
+  padding: 20px 60px;
+  /* Opaco al inicio */
+  background: rgba(247,243,237,1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid transparent;
-  transition: border-color 0.4s, padding 0.4s;
+  /* Transición suave en todas las propiedades */
+  transition: background 0.4s ease, padding 0.4s ease,
+              border-color 0.4s ease, box-shadow 0.4s ease;
+  /* GPU compositing para que no trabe en móvil */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: background, padding;
 }
-.nav.scrolled { border-color: var(--beige-dark); padding: 12px 60px; }
-.nav-logo img { height: 36px; width: auto; mix-blend-mode: multiply; transition: height 0.3s; }
-.nav.scrolled .nav-logo img { height: 28px; }
+/* Al hacer scroll: semitransparente + sombra sutil */
+.nav.scrolled {
+  padding: 10px 60px;
+  background: rgba(247,243,237,0.82);
+  border-color: rgba(217,206,186,0.5);
+  box-shadow: 0 2px 20px rgba(42,35,24,0.06);
+}
+.nav-logo img {
+  height: 36px; width: auto;
+  mix-blend-mode: multiply;
+  transition: height 0.3s ease;
+}
+.nav.scrolled .nav-logo img { height: 26px; }
 .nav-links { display: flex; gap: 40px; list-style: none; }
 .nav-links a {
   font-size: 0.75rem; font-weight: 400; letter-spacing: 0.16em;
@@ -23,13 +41,36 @@
   color: var(--white); background: var(--dark); padding: 10px 22px;
   text-decoration: none; transition: background 0.3s; cursor: pointer; border: none;
   font-family: var(--sans);
+  -webkit-tap-highlight-color: transparent;
 }
 .nav-cta:hover { background: var(--tan); }
+
+/* Botón hamburguesa — área de toque grande para móvil */
 .nav-toggle {
-  display: none; flex-direction: column; gap: 5px;
-  cursor: pointer; background: none; border: none;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 10px;          /* área de toque mínima 44px */
+  margin: -10px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  z-index: 300;
 }
-.nav-toggle span { width: 24px; height: 1px; background: var(--dark); display: block; }
+.nav-toggle span {
+  width: 24px; height: 1.5px;
+  background: var(--dark);
+  display: block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: center;
+}
+/* Animación X al abrir */
+.nav-toggle.active span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-toggle.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-toggle.active span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
 /* ── HERO ───────────────────────────────────── */
 .hero {
@@ -165,7 +206,8 @@
 
 /* ── RESPONSIVE ─────────────────────────────── */
 @media (max-width: 1100px) {
-  .nav, .nav.scrolled { padding: 16px 32px; }
+  .nav { padding: 16px 32px; }
+  .nav.scrolled { padding: 10px 32px; }
   .hero { grid-template-columns: 1fr; }
   .hero-left { padding: 110px 32px 64px; }
   .hero-right { display: none; }
@@ -191,8 +233,41 @@
 }
 @media (max-width: 640px) {
   .nav { padding: 14px 20px; }
+  .nav.scrolled { padding: 10px 20px; }
+
+  /* Ocultar links en mobile por defecto */
   .nav-links { display: none; }
-  .nav-links.open { display: flex; flex-direction: column; position: fixed; inset: 0; background: var(--beige-light); z-index: 200; align-items: center; justify-content: center; gap: 36px; }
+
+  /* Menú móvil abierto — ocupa toda la pantalla */
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    background: var(--beige-light);
+    z-index: 250;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    /* Evitar scroll interno en iOS */
+    overflow: hidden;
+    -webkit-overflow-scrolling: auto;
+  }
+  .nav-links.open a {
+    font-size: 1.2rem;
+    letter-spacing: 0.2em;
+    color: var(--dark);
+    padding: 8px 0;
+    /* Área de toque generosa */
+    display: block;
+    min-width: 160px;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .nav-links.open a:active { color: var(--tan); }
+
   .nav-cta { display: none; }
   .nav-toggle { display: flex; }
   .hero-left { padding: 96px 20px 56px; }

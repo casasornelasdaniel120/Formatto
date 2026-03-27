@@ -34,15 +34,40 @@ function useReveal() {
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+
+  // Scroll pasivo para mejor rendimiento en móvil
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', onScroll)
+    const onScroll = () => setScrolled(window.scrollY > 60)
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  // Bloquear scroll del body cuando el menú está abierto (fix iOS)
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [open])
+
   const close = () => setOpen(false)
+  const toggle = () => setOpen(prev => !prev)
+
   return (
-    <nav className={`nav${scrolled ? ' scrolled' : ''}`}>
-      <a href="#hero" className="nav-logo"><img src={IMG.logo} alt="FORMAtto" /></a>
+    <nav className={`nav${scrolled ? ' scrolled' : ''}${open ? ' menu-open' : ''}`}>
+      <a href="#hero" className="nav-logo" onClick={close}>
+        <img src={IMG.logo} alt="FORMAtto" />
+      </a>
       <ul className={`nav-links${open ? ' open' : ''}`}>
         <li><a href="#servicios" onClick={close}>Servicios</a></li>
         <li><a href="#proyectos" onClick={close}>Proyectos</a></li>
@@ -50,8 +75,13 @@ function Nav() {
         <li><a href="#equipo" onClick={close}>Equipo</a></li>
         <li><a href="#contacto" onClick={close}>Contacto</a></li>
       </ul>
-      <a href="#contacto" className="nav-cta">Iniciar proyecto</a>
-      <button className="nav-toggle" onClick={() => setOpen(!open)} aria-label="Menú">
+      <a href="#contacto" className="nav-cta" onClick={close}>Iniciar proyecto</a>
+      <button
+        className={`nav-toggle${open ? ' active' : ''}`}
+        onClick={toggle}
+        aria-label="Menú"
+        aria-expanded={open}
+      >
         <span /><span /><span />
       </button>
     </nav>
